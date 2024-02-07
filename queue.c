@@ -45,7 +45,6 @@ bool q_insert_head(struct list_head *head, char *s)
         free(node);
         return false;
     }
-    // INIT_LIST_HEAD(&node->list);
     list_add(&node->list, head);
     return true;
 }
@@ -61,7 +60,6 @@ bool q_insert_tail(struct list_head *head, char *s)
         free(node);
         return false;
     }
-    // INIT_LIST_HEAD(&node->list);
     list_add_tail(&node->list, head);
     return true;
 }
