@@ -20,6 +20,12 @@ struct list_head *q_new()
     return head;
 }
 
+static inline int q_compare(struct list_head *a, struct list_head *b)
+{
+    return strcmp(list_entry(a, element_t, list)->value,
+                  list_entry(b, element_t, list)->value);
+}
+
 /* Free all storage used by queue */
 void q_free(struct list_head *l)
 {
@@ -208,6 +214,7 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+<<<<<<< HEAD
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend) {}
 
@@ -217,6 +224,77 @@ int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     return 0;
+=======
+static void merge(struct list_head **head,
+                  struct list_head *a,
+                  struct list_head *b)
+{
+    struct list_head **tail = head;
+
+    while (a && b) {
+        if (q_compare(a, b) < 0) {
+            *tail = a;
+            a = a->next;
+        } else {
+            *tail = b;
+            b = b->next;
+        }
+
+        tail = &(*tail)->next;
+    }
+
+    if (a) {
+        *tail = a;
+    } else if (b) {
+        *tail = b;
+    }
+}
+
+/* Sort elements of queue in ascending order */
+void q_sort(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    // Split original list into sorted sublists.
+    struct list_head *h = head->next, *t = head->next;
+    struct list_head *sublist = NULL;
+    while (h != head) {
+        while (t->next != head && q_compare(t, t->next) < 0) {
+            t = t->next;
+        }
+        h->prev = sublist;
+        sublist = h;
+        t = t->next;
+        t->prev->next = NULL;
+        h = t;
+    }
+
+    // Merge sublists.
+    struct list_head *tmp, *currsub;
+    while (sublist->prev) {
+        struct list_head **subhead;
+
+        currsub = sublist;
+        subhead = &sublist;
+        while (currsub && currsub->prev) {
+            tmp = currsub->prev->prev;
+            merge(subhead, currsub, currsub->prev);
+            subhead = &(*subhead)->prev;
+            currsub = tmp;
+        }
+        *subhead = currsub;
+    }
+    // Fix doubly linked list
+    head->next = sublist;
+    tmp = head;
+    while (sublist) {
+        sublist->prev = tmp;
+        tmp = sublist;
+        sublist = sublist->next;
+    }
+    head->prev = tmp;
+    tmp->next = head;
+>>>>>>> 99f39c2 (Implement merge sort)
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
