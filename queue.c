@@ -43,14 +43,21 @@ void q_free(struct list_head *l)
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
     element_t *node = malloc(sizeof(element_t));
     if (!node)
         return false;
-    node->value = strdup(s);
+    size_t len = strlen(s);
+    node->value = malloc(len + 1);
     if (!node->value) {
         free(node);
         return false;
     }
+
+    memcpy(node->value, s, len + 1);
+
     list_add(&node->list, head);
     return true;
 }
@@ -58,16 +65,7 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    element_t *node = malloc(sizeof(element_t));
-    if (!node)
-        return false;
-    node->value = strdup(s);
-    if (!node->value) {
-        free(node);
-        return false;
-    }
-    list_add_tail(&node->list, head);
-    return true;
+    return q_insert_head(head->prev, s);
 }
 
 /* Remove an element from head of queue */
@@ -75,10 +73,10 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
     if (!head || list_empty(head))
         return NULL;
-    element_t *node = container_of(head->next, element_t, list);
+    element_t *node = list_entry(head->next, element_t, list);
     list_del(&node->list);
     if (sp) {
-        strncpy(sp, node->value, bufsize - 1);
+        memcpy(sp, node->value, bufsize - 1);
         sp[bufsize - 1] = '\0';
     }
     return node;
@@ -87,15 +85,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (!head || list_empty(head))
-        return NULL;
-    element_t *node = container_of(head->prev, element_t, list);
-    list_del(&node->list);
-    if (sp) {
-        strncpy(sp, node->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
-    return node;
+    return q_remove_head(head->prev->prev, sp, bufsize);
 }
 
 /* Return number of elements in queue */
