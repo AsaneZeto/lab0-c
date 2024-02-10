@@ -317,10 +317,63 @@ int q_descend(struct list_head *head)
     return q_size(head);
 }
 
+<<<<<<< HEAD
 /* Merge all the queues into one sorted queue, which is in ascending/descending
  * order */
 int q_merge(struct list_head *head, bool descend)
+=======
+static inline int get_contex_id(struct list_head *head)
+{
+    return list_entry(head, queue_contex_t, chain)->id;
+}
+
+/* Merge all the queues into one sorted queue, which is in ascending order */
+int q_merge(struct list_head *head, bool descend)
+>>>>>>> 4903e02 (Implement q_merge)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    return 0;
+    int n_queue = 0;
+    queue_contex_t *ptr = NULL;
+    list_for_each_entry (ptr, head, chain) {
+        n_queue++;
+        ptr->q->prev->next = NULL;
+    }
+
+    struct list_head *l1, *l2;
+    struct list_head *contex1, *contex2;
+    for (int interval = 1; interval < n_queue; interval *= 2) {
+        contex1 = head->next;
+        contex2 = head->next;
+        for (int i = 0; i < interval; i++)
+            contex2 = contex2->next;
+
+        while (get_contex_id(contex1) + interval < n_queue) {
+            l1 = list_entry(contex1, queue_contex_t, chain)->q;
+            l2 = list_entry(contex2, queue_contex_t, chain)->q;
+
+            struct list_head *subhead = l1->next;
+            struct list_head **indir = &subhead;
+            merge(indir, subhead, l2->next);
+            l1->next = *indir;
+            INIT_LIST_HEAD(l2);
+            if (get_contex_id(contex1) + 2 * interval > n_queue)
+                break;
+            for (int i = 0; i < interval * 2; i++) {
+                contex1 = contex1->next;
+                contex2 = contex2->next;
+            }
+        }
+    }
+
+    // Fix doubly linked list
+    l1 = list_entry(head->next, queue_contex_t, chain)->q;
+    struct list_head *prev = l1, *curr = l1->next;
+    while (curr) {
+        curr->prev = prev;
+        prev = curr;
+        curr = curr->next;
+    }
+    l1->prev = prev;
+    prev->next = l1;
+    return q_size(l1);
 }
