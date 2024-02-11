@@ -4,6 +4,10 @@
 
 #include "queue.h"
 
+typedef int
+    __attribute__((nonnull(1, 2))) (*list_cmp_func_t)(const struct list_head *,
+                                                      const struct list_head *);
+
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
  * following line.
@@ -20,10 +24,16 @@ struct list_head *q_new()
     return head;
 }
 
-static inline int q_compare(struct list_head *a, struct list_head *b)
+int q_less(const struct list_head *a, const struct list_head *b)
 {
     return strcmp(list_entry(a, element_t, list)->value,
                   list_entry(b, element_t, list)->value);
+}
+
+int q_greater(const struct list_head *a, const struct list_head *b)
+{
+    return strcmp(list_entry(b, element_t, list)->value,
+                  list_entry(a, element_t, list)->value);
 }
 
 /* Free all storage used by queue */
@@ -91,7 +101,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
-    if (!head)
+    if (!head || list_empty(head))
         return 0;
 
     int len = 0;
@@ -204,25 +214,15 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
-<<<<<<< HEAD
-/* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
-
-/* Remove every node which has a node with a strictly less value anywhere to
- * the right side of it */
-int q_ascend(struct list_head *head)
-{
-    // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
-=======
 static void merge(struct list_head **head,
                   struct list_head *a,
-                  struct list_head *b)
+                  struct list_head *b,
+                  list_cmp_func_t cmp)
 {
     struct list_head **tail = head;
 
     while (a && b) {
-        if (q_compare(a, b) < 0) {
+        if (cmp(a, b) <= 0) {
             *tail = a;
             a = a->next;
         } else {
@@ -245,11 +245,18 @@ void q_sort(struct list_head *head, bool descend)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
+
+    list_cmp_func_t q_cmp;
+    if (descend)
+        q_cmp = q_greater;
+    else
+        q_cmp = q_less;
+
     // Split original list into sorted sublists.
     struct list_head *h = head->next, *t = head->next;
     struct list_head *sublist = NULL;
     while (h != head) {
-        while (t->next != head && q_compare(t, t->next) < 0) {
+        while (t->next != head && q_cmp(t, t->next) <= 0) {
             t = t->next;
         }
         h->prev = sublist;
@@ -268,7 +275,7 @@ void q_sort(struct list_head *head, bool descend)
         subhead = &sublist;
         while (currsub && currsub->prev) {
             tmp = currsub->prev->prev;
-            merge(subhead, currsub, currsub->prev);
+            merge(subhead, currsub, currsub->prev, q_cmp);
             subhead = &(*subhead)->prev;
             currsub = tmp;
         }
@@ -284,12 +291,11 @@ void q_sort(struct list_head *head, bool descend)
     }
     head->prev = tmp;
     tmp->next = head;
->>>>>>> 99f39c2 (Implement merge sort)
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
  * the right side of it */
-int q_descend(struct list_head *head)
+int q_remove(struct list_head *head, list_cmp_func_t cmp)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     if (!head || list_empty(head) || list_is_singular(head))
@@ -297,7 +303,7 @@ int q_descend(struct list_head *head)
 
     struct list_head *node = head->prev;
     while (node != head && node->prev != head) {
-        if (q_compare(node, node->prev) > 0) {
+        if (cmp(node, node->prev) < 0) {
             struct list_head *tmp = node->prev;
             list_del_init(tmp);
             q_release_element(list_entry(tmp, element_t, list));
@@ -307,11 +313,17 @@ int q_descend(struct list_head *head)
     return q_size(head);
 }
 
-<<<<<<< HEAD
-/* Merge all the queues into one sorted queue, which is in ascending/descending
- * order */
-int q_merge(struct list_head *head, bool descend)
-=======
+int q_descend(struct list_head *head)
+{
+    // https://leetcode.com/problems/remove-nodes-from-linked-list/
+    return q_remove(head, q_greater);
+}
+
+int q_ascend(struct list_head *head)
+{
+    return q_remove(head, q_less);
+}
+
 static inline int get_contex_id(struct list_head *head)
 {
     return list_entry(head, queue_contex_t, chain)->id;
@@ -319,7 +331,6 @@ static inline int get_contex_id(struct list_head *head)
 
 /* Merge all the queues into one sorted queue, which is in ascending order */
 int q_merge(struct list_head *head, bool descend)
->>>>>>> 4903e02 (Implement q_merge)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
     int n_queue = 0;
@@ -328,6 +339,12 @@ int q_merge(struct list_head *head, bool descend)
         n_queue++;
         ptr->q->prev->next = NULL;
     }
+
+    list_cmp_func_t q_cmp;
+    if (descend)
+        q_cmp = q_greater;
+    else
+        q_cmp = q_less;
 
     struct list_head *l1, *l2;
     struct list_head *contex1, *contex2;
@@ -343,7 +360,7 @@ int q_merge(struct list_head *head, bool descend)
 
             struct list_head *subhead = l1->next;
             struct list_head **indir = &subhead;
-            merge(indir, subhead, l2->next);
+            merge(indir, subhead, l2->next, q_cmp);
             l1->next = *indir;
             INIT_LIST_HEAD(l2);
             if (get_contex_id(contex1) + 2 * interval > n_queue)
