@@ -24,18 +24,6 @@ struct list_head *q_new()
     return head;
 }
 
-int q_less(const struct list_head *a, const struct list_head *b)
-{
-    return strcmp(list_entry(a, element_t, list)->value,
-                  list_entry(b, element_t, list)->value);
-}
-
-int q_greater(const struct list_head *a, const struct list_head *b)
-{
-    return strcmp(list_entry(b, element_t, list)->value,
-                  list_entry(a, element_t, list)->value);
-}
-
 /* Free all storage used by queue */
 void q_free(struct list_head *l)
 {
@@ -212,6 +200,18 @@ void q_reverseK(struct list_head *head, int k)
         count -= k;
         node = curr;
     }
+}
+
+int q_less(const struct list_head *a, const struct list_head *b)
+{
+    return strcmp(list_entry(a, element_t, list)->value,
+                  list_entry(b, element_t, list)->value);
+}
+
+int q_greater(const struct list_head *a, const struct list_head *b)
+{
+    return strcmp(list_entry(b, element_t, list)->value,
+                  list_entry(a, element_t, list)->value);
 }
 
 static void merge(struct list_head **head,
