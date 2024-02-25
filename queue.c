@@ -292,9 +292,8 @@ void q_sort(struct list_head *head, bool descend)
     tmp->next = head;
 }
 
-/* Remove every node which has a node with a strictly greater value anywhere to
- * the right side of it */
-int q_remove(struct list_head *head, list_cmp_func_t cmp)
+
+int q_remove_cmp(struct list_head *head, list_cmp_func_t cmp)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     if (!head || list_empty(head) || list_is_singular(head))
@@ -312,15 +311,17 @@ int q_remove(struct list_head *head, list_cmp_func_t cmp)
     return q_size(head);
 }
 
+/* Remove every node which has a node with a strictly greater value anywhere to
+ * the right side of it */
 int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return q_remove(head, q_greater);
+    return q_remove_cmp(head, q_greater);
 }
 
 int q_ascend(struct list_head *head)
 {
-    return q_remove(head, q_less);
+    return q_remove_cmp(head, q_less);
 }
 
 static inline int get_contex_id(struct list_head *head)
