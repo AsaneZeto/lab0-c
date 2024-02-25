@@ -293,7 +293,7 @@ void q_sort(struct list_head *head, bool descend)
 }
 
 
-int q_remove_cmp(struct list_head *head, list_cmp_func_t cmp)
+static inline int q_remove_cmp(struct list_head *head, list_cmp_func_t cmp)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     if (!head || list_empty(head) || list_is_singular(head))
