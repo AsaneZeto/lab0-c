@@ -201,13 +201,14 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
-int q_less(const struct list_head *a, const struct list_head *b)
+static inline int q_less(const struct list_head *a, const struct list_head *b)
 {
     return strcmp(list_entry(a, element_t, list)->value,
                   list_entry(b, element_t, list)->value);
 }
 
-int q_greater(const struct list_head *a, const struct list_head *b)
+static inline int q_greater(const struct list_head *a,
+                            const struct list_head *b)
 {
     return strcmp(list_entry(b, element_t, list)->value,
                   list_entry(a, element_t, list)->value);
