@@ -245,11 +245,7 @@ void q_sort(struct list_head *head, bool descend)
     if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    list_cmp_func_t q_cmp;
-    if (descend)
-        q_cmp = q_greater;
-    else
-        q_cmp = q_less;
+    list_cmp_func_t q_cmp = descend ? q_greater : q_less;
 
     // Split original list into sorted sublists.
     struct list_head *h = head->next, *t = head->next;
@@ -340,11 +336,7 @@ int q_merge(struct list_head *head, bool descend)
         ptr->q->prev->next = NULL;
     }
 
-    list_cmp_func_t q_cmp;
-    if (descend)
-        q_cmp = q_greater;
-    else
-        q_cmp = q_less;
+    list_cmp_func_t q_cmp = descend ? q_greater : q_less;
 
     struct list_head *l1, *l2;
     struct list_head *contex1, *contex2;
