@@ -21,6 +21,7 @@
 
 #include "dudect/fixture.h"
 #include "list.h"
+#include "list_sort.h"
 #include "random.h"
 
 /* Shannon entropy */
@@ -36,6 +37,9 @@ extern int show_entropy;
 
 /* How much padding should be added to check for string overrun? */
 #define STRINGPAD MAXSTRING
+
+/* Which sorting algorithm will be used? */
+#define LISTSORT 1
 
 /* It is a bit sketchy to use this #include file on the solution version of the
  * code.
@@ -74,6 +78,8 @@ static int fail_count = 0;
 static int string_length = MAXSTRING;
 
 static int descend = 0;
+
+static int sort = 0;
 
 #define MIN_RANDSTR_LEN 5
 #define MAX_RANDSTR_LEN 10
@@ -598,8 +604,17 @@ bool do_sort(int argc, char *argv[])
     error_check();
 
     set_noallocate_mode(true);
-    if (current && exception_setup(true))
-        q_sort(current->q, descend);
+    if (current && exception_setup(true)) {
+        switch (sort) {
+        case LISTSORT:
+            list_sort(NULL, current->q, descend);
+            break;
+        default:
+            q_sort(current->q, descend);
+            break;
+        }
+    }
+
     exception_cancel();
     set_noallocate_mode(false);
 
@@ -1060,6 +1075,7 @@ static void console_init()
               "Number of times allow queue operations to return false", NULL);
     add_param("descend", &descend,
               "Sort and merge queue in ascending/descending order", NULL);
+    add_param("sort", &sort, "Specify the sorting algorithm.", NULL);
 }
 
 /* Signal handlers */
