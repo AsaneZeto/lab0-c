@@ -6,7 +6,7 @@
 
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
-#define u8 uint8_t
+typedef uint8_t u8;
 
 typedef int
     __attribute__((nonnull(2, 3))) (*list_cmp_func_t)(void *,
