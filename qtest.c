@@ -1075,7 +1075,7 @@ static void console_init()
               "Number of times allow queue operations to return false", NULL);
     add_param("descend", &descend,
               "Sort and merge queue in ascending/descending order", NULL);
-    add_param("sort", &sort, "Specify the sorting algorithm.", NULL);
+    add_param("sort", &sort, "Specify the sorting algorithm", NULL);
 }
 
 /* Signal handlers */
