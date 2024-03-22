@@ -6,6 +6,7 @@ CFLAGS += -Wvla
 
 GIT_HOOKS := .git/hooks/applied
 DUT_DIR := dudect
+SORT_PERF_DIR := sort-perf
 all: $(GIT_HOOKS) qtest
 
 tid := 0
@@ -42,14 +43,25 @@ OBJS := qtest.o report.o console.o harness.o queue.o \
         shannon_entropy.o \
         linenoise.o web.o list_sort.o
 
+SORT_COMP_OBJS := sort-perf/sort_comp.o report.o console.o harness.o queue.o \
+				random.o dudect/constant.o dudect/fixture.o dudect/ttest.o \
+				shannon_entropy.o \
+				linenoise.o web.o
+
 deps := $(OBJS:%.o=.%.o.d)
+sort_deps := $(SORT_COMP_OBJS:%.o=.%.o.d)
 
 qtest: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $^ -lm
 
+sort_comp: $(SORT_COMP_OBJS)
+	$(VECHO) "  LD\t$@\n"
+	$(Q)$(CC) $(LDFLAGS) -o $(SORT_PERF_DIR)/$@ $^ -lm
+
 %.o: %.c
 	@mkdir -p .$(DUT_DIR)
+	@mkdir -p .$(SORT_PERF_DIR)
 	$(VECHO) "  CC\t$@\n"
 	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD -MF .$@.d $<
 
@@ -77,6 +89,7 @@ valgrind: valgrind_existence
 clean:
 	rm -f $(OBJS) $(deps) *~ qtest /tmp/qtest.*
 	rm -rf .$(DUT_DIR)
+	rm -f $(SORT_COMP_OBJS) $(sort_deps)
 	rm -rf *.dSYM
 	(cd traces; rm -f *~)
 
@@ -84,3 +97,4 @@ distclean: clean
 	rm -f .cmd_history
 
 -include $(deps)
+-include $(sort_deps)
