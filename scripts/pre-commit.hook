@@ -19,7 +19,9 @@ CPPCHECK_suppresses="--inline-suppr harness.c \
 --suppress=returnDanglingLifetime:report.c \
 --suppress=constParameterCallback:console.c \
 --suppress=constParameterPointer:console.c \
---suppress=checkLevelNormal:log2_lshift16.h"
+--suppress=checkLevelNormal:log2_lshift16.h \
+--suppress=preprocessorErrorDirective:random.h \
+"
 CPPCHECK_OPTS="-I. --enable=all --error-exitcode=1 --force $CPPCHECK_suppresses $CPPCHECK_unmatched ."
 
 RETURN=0
@@ -43,7 +45,7 @@ if [ -z "$($CPPCHECK --version | grep -E '^Cppcheck\s2')" ]; then
     if [ $CPPCHECK_VER -lt 90 ]; then
         echo "[!] cppcheck version must be at least 1.90." >&2
         echo -e "    Check 'Developer Info' for building Cppcheck from source:\n" \
-                "          http://cppcheck.sourceforge.net/devinfo/" >&2
+                "          https://cppcheck.sourceforge.net/devinfo/" >&2
         exit 1
     fi
 fi
